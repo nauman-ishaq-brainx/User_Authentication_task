@@ -1,0 +1,27 @@
+{
+  "name": "user_authentication",
+  "version": "1.0.0",
+  "description": "This repository contains authentication module",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nauman-ishaq-brainx/User_Authentication.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nauman-ishaq-brainx/User_Authentication/issues"
+  },
+  "homepage": "https://github.com/nauman-ishaq-brainx/User_Authentication#readme",
+  "dependencies": {
+    "crypto": "^1.0.1",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.15.0",
+    "nodemon": "^3.1.10"
+  }
+}
