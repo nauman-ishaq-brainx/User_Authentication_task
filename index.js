@@ -2,7 +2,7 @@
 const express = require('express');
 const app = express();
 require('dotenv').config();
-const port = process.env.PORT || 8000;
+const port = process.env.PORT;
 
 
 //DB connection
@@ -22,4 +22,4 @@ app.use('/api/v1', require('./routes/index'))
 
 
 //listener
-app.listen(port, ()=>{console.log('listening on server 8000')});
+app.listen(port, ()=>{console.log('listening on server', port)});
