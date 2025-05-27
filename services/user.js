@@ -8,10 +8,7 @@ async function addUser(data) {
     return user
 }
 
-async function createJwtToken(payload, key=JWT_SECRET){
-    console.log(payload, key);
-    return jwt.sign(payload, key)
-}
+
 
 async function findUser(cond) {
     return await User.findOne(cond);
@@ -41,4 +38,4 @@ async function aggregateUsers(pipeline = []) {
 
 
 
-module.exports = { addUser, findUser, updateUser, findAllUsers, deleteUser, aggregateUsers, createJwtToken }
+module.exports = { addUser, findUser, updateUser, findAllUsers, deleteUser, aggregateUsers }

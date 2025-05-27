@@ -15,9 +15,12 @@ module.exports = async function(req, res, next){
         if (!user) {
             return res.status(404).json({message: "User does not exist"})
         }
+        if (!user.isVerified) {
+            return res.status(403).json({ error: "Please verify your email" });
+        };
         req.user = user;
         next()
     } catch(err){
-        return res.status(401).json({ error: err.message });
+        return res.status(500).json({ error: err.message });
     }
 }

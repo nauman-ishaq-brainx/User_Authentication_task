@@ -1,4 +1,4 @@
-const { userService } = require('../services')
+const { userService, jwtService } = require('../services')
 const jwt = require('jsonwebtoken');
 const { TOKEN_PURPOSE } = require('../constants');
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -15,15 +15,8 @@ async function signUpController(req, res) {
         if (existingUser) return res.status(400).json({ error: "User already exists" });
         //Add a new user
         const user = await userService.addUser({ name, email, password });
-        //Generate a jwt token and send it to user
-        // const token = jwt.sign(
-        //     { id: user._id, purpose: TOKEN_PURPOSE.email_verification },
-        //     JWT_SECRET,
-        //     { expiresIn: "24h" }
-        // );
-        const token = await userService.createJwtToken({ id: user._id, purpose: TOKEN_PURPOSE.email_verification });
+        const token = await jwtService.createJwtToken({ id: user._id, purpose: TOKEN_PURPOSE.email_verification });
         console.log(token);
-
 
         res.status(201).json({
             message: 'User created. Please verify your email.',
@@ -63,7 +56,7 @@ async function logInController(req, res) {
         }
         // Assign a token if everything valid
         // const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
-        const token = await userService.createJwtToken({ id: user._id }, JWT_SECRET);
+        const token = await jwtService.createJwtToken({ id: user._id }, JWT_SECRET);
         const { password: _, ...userObject } = user.toObject();
         res.json({ token, userObject });
     }
@@ -171,7 +164,7 @@ async function forgotPasswordController(req, res) {
             return res.status(401).json({ error: "Invalid token" });
         };
         //Generate a new password-reset-token
-        const token = await userService.createJwtToken({ id:user._id, purpose: TOKEN_PURPOSE.reset_password },user.password);
+        const token = await jwtService.createJwtToken({ id:user._id, purpose: TOKEN_PURPOSE.reset_password },user.password);
 
         return res.status(201).json({
             message: 'Please use this token to reset your password.',
