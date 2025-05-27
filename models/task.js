@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const taskSchema = new mongoose.Schema({
-    Name: {
+    name: {
         type: String,
         required: true
     },
@@ -12,7 +12,7 @@ const taskSchema = new mongoose.Schema({
     dueDate: {
         type: Date
     },
-    createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 },
     { timestamps: true }
 

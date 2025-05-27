@@ -1,5 +1,4 @@
-const { findUser, addUser, updateUser } = require('../services/user')
-const crypto = require('crypto');
+const { userService } = require('../services')
 const jwt = require('jsonwebtoken');
 const { TOKEN_PURPOSE } = require('../constants');
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -12,16 +11,19 @@ async function signUpController(req, res) {
             return res.status(400).json({ error: "Email, password and name are required." })
         }
         //check for existing User
-        existingUser = await findUser({ email });
+        existingUser = await userService.findUser({ email });
         if (existingUser) return res.status(400).json({ error: "User already exists" });
         //Add a new user
-        const user = await addUser({ name, email, password });
+        const user = await userService.addUser({ name, email, password });
         //Generate a jwt token and send it to user
-        const token = jwt.sign(
-            { email, purpose: TOKEN_PURPOSE.email_verification },
-            JWT_SECRET,
-            { expiresIn: "24h" }
-        );
+        // const token = jwt.sign(
+        //     { id: user._id, purpose: TOKEN_PURPOSE.email_verification },
+        //     JWT_SECRET,
+        //     { expiresIn: "24h" }
+        // );
+        const token = await userService.createJwtToken({ id: user._id, purpose: TOKEN_PURPOSE.email_verification });
+        console.log(token);
+
 
         res.status(201).json({
             message: 'User created. Please verify your email.',
@@ -30,7 +32,7 @@ async function signUpController(req, res) {
 
     }
     catch (err) {
-        return res.status(400).json({ error: err.message })
+        return res.status(500).json({ error: err.message })
     }
 }
 
@@ -41,13 +43,13 @@ async function logInController(req, res) {
         if (!email || !password) {
             return res.status(400).json({ error: "Email and password are required." })
         }
-        const user = await findUser({ email });
+        const user = await userService.findUser({ email });
 
         //check if user exists
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
-        console.log(user);
+
         //check if user is verified
         if (!user.isVerified) {
             return res.status(403).json({ error: "Please verify your email" });
@@ -60,13 +62,13 @@ async function logInController(req, res) {
             return res.status(401).json({ error: "Please enter correct password" });
         }
         // Assign a token if everything valid
-        const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
+        // const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
+        const token = await userService.createJwtToken({ id: user._id }, JWT_SECRET);
         const { password: _, ...userObject } = user.toObject();
-
         res.json({ token, userObject });
     }
     catch (err) {
-        return res.status(400).json({ error: err.message })
+        return res.status(500).json({ error: err.message })
     }
 }
 
@@ -79,22 +81,28 @@ async function emailVerificationController(req, res) {
         }
         // decode with otp to get email
         const decoded = jwt.verify(token, JWT_SECRET);
-        console.log(jwt.decode(token));
+
         if (decoded.purpose !== TOKEN_PURPOSE.email_verification) {
             return res.status(403).json({ error: "Invalid token purpose" });
         }
 
         // find user with email
-        const user = await findUser({ email: decoded.email });
+        const user = await userService.findUser({ _id: decoded.id });
 
 
         if (!user) {
             return res.status(401).json({ error: "Invalid token" });
         }
 
-        await updateUser({ email: decoded.email }, {
+        if (user.isVerified) {
+            return res.status(400).json({ error: "User already verified" });
+        }
+
+
+        const updatedUser = await userService.updateUser({ _id: decoded.id }, {
             isVerified: true
         });
+
 
         res.json({ message: 'Email successfully verified' });
 
@@ -107,6 +115,7 @@ async function emailVerificationController(req, res) {
                 JWT_SECRET,
                 { expiresIn: "24h" }
             );
+            
 
             // Resend email with new OTP + token
             return res.status(400).json({
@@ -115,7 +124,7 @@ async function emailVerificationController(req, res) {
             });
         }
 
-        res.status(400).json({ error: err.message });
+        res.status(500).json({ error: err.message });
     }
 }
 
@@ -123,30 +132,28 @@ async function changePasswordController(req, res) {
     try {
         //get user id and find user by this id
         const userId = req.user.id;
-        const user = await findUser({ _id: userId });
+        const user = await userService.findUser({ _id: userId });
         const { oldPassword, newPassword } = req.body;
         if (!oldPassword || !newPassword) {
             return res.status(400).json({ error: "Old password and new password are required" });
         }
-
         //Check if user exists
         if (!user) {
             return res.status(401).json({ error: "Invalid token" });
         }
-        console.log(user);
 
         //check password 
         if (!user.comparePassword(oldPassword)) {
             return res.status(401).json({ error: "Please enter correct current password" });
         }
         //update the password
-        await updateUser({ email: user.email },
+        await userService.updateUser({ email: user.email },
             { password: newPassword }
         );
         return res.json({ message: "Password changed successfully" });
     }
     catch (err) {
-        return res.status(400).json({ error: err.message })
+        return res.status(500).json({ error: err.message })
     }
 }
 
@@ -158,26 +165,22 @@ async function forgotPasswordController(req, res) {
         if (!email) {
             return res.status(400).json({ error: "Email is required." })
         }
-        const user = await findUser({ email });
+        const user = await userService.findUser({ email });
         //Check if user exists
         if (!user) {
             return res.status(401).json({ error: "Invalid token" });
         };
         //Generate a new password-reset-token
-        const token = jwt.sign(
-            { email, purpose: TOKEN_PURPOSE.reset_password },
-            JWT_SECRET,
-            { expiresIn: "24h" }
-        );
+        const token = await userService.createJwtToken({ id:user._id, purpose: TOKEN_PURPOSE.reset_password },user.password);
 
         return res.status(201).json({
-            message: 'Please use this token and OTP to reset your password.',
+            message: 'Please use this token to reset your password.',
             token
         });
 
     }
     catch (err) {
-        return res.status(400).json({ error: err.message });
+        return res.status(500).json({ error: err.message });
     }
 }
 
@@ -188,30 +191,35 @@ async function resetPasswordController(req, res) {
     try {
 
         if (!token || !newPassword) {
-            return res.status(400).json({ error: "Token, OTP and New Password are required." })
+            return res.status(400).json({ error: "Token New Password are required." })
         }
-        // decode with otp to get email
-        const decoded = jwt.verify(token, JWT_SECRET);
 
-        if (decoded.purpose !== TOKEN_PURPOSE.reset_password) {
-            return res.status(403).json({ error: "Invalid token purpose" });
+        // Decode the token without verifying to get user ID
+        const decoded = jwt.decode(token);
+        if (!decoded || !decoded.id || decoded.purpose !== TOKEN_PURPOSE.reset_password) {
+            return res.status(403).json({ error: "Invalid token" });
         }
-        // find user with email
-        const user = await findUser({ email: decoded.email });
 
-
+        // Find the user
+        const user = await userService.findUser({ _id: decoded.id });
         if (!user) {
             return res.status(401).json({ error: "Invalid token" });
         }
 
-        await updateUser({ email: decoded.email }, {
+        // Verify the token using user's current password hash
+        jwt.verify(token, user.password);
+
+        // Update the password
+        await userService.updateUser({ _id: user._id }, {
             password: newPassword
         });
+
+        res.status(200).json({ message: 'Password changed successfully' });
 
         res.json({ message: 'Password changes successfully' });
 
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        res.status(500).json({ error: err.message });
     }
 
 }

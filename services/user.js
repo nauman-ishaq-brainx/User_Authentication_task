@@ -1,5 +1,6 @@
-const User = require('../models/user')
-
+const { User } = require('../models')
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET;
 
 async function addUser(data) {
     const user = new User(data);
@@ -7,7 +8,10 @@ async function addUser(data) {
     return user
 }
 
-
+async function createJwtToken(payload, key=JWT_SECRET){
+    console.log(payload, key);
+    return jwt.sign(payload, key)
+}
 
 async function findUser(cond) {
     return await User.findOne(cond);
@@ -37,4 +41,4 @@ async function aggregateUsers(pipeline = []) {
 
 
 
-module.exports = { addUser, findUser, updateUser, findAllUsers, deleteUser, aggregateUsers }
+module.exports = { addUser, findUser, updateUser, findAllUsers, deleteUser, aggregateUsers, createJwtToken }

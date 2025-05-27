@@ -1,4 +1,4 @@
-const Task = require('../models/task');
+const {Task} = require('../models');
 
 
 
@@ -12,6 +12,8 @@ async function addTask(data){
 async function findTask(cond) {
     return await Task.findOne(cond);
 }
+
+
 async function findAllTasks(cond = {}) {
     return await Task.find(cond);
 }
