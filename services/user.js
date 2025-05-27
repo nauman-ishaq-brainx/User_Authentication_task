@@ -12,7 +12,7 @@ async function addUser(data) {
 async function findUser(cond) {
     return await User.findOne(cond);
 }
-async function findAll(cond = {}) {
+async function findAllUsers(cond = {}) {
     return await User.find(cond);
 }
 
@@ -37,4 +37,4 @@ async function aggregateUsers(pipeline = []) {
 
 
 
-module.exports = { addUser, findUser, updateUser, findAll, deleteUser, aggregateUsers }
+module.exports = { addUser, findUser, updateUser, findAllUsers, deleteUser, aggregateUsers }
