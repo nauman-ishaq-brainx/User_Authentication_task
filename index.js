@@ -6,6 +6,11 @@ const port = process.env.PORT;
 const connectDb = require('./connections/connect');
 
 
+const cors = require("cors");
+
+app.use(
+  cors()
+);
 
 // JSON parser
 app.use(express.json());
@@ -15,8 +20,6 @@ app.use('/api/v1', require('./routes/index'))
 
 
 //DB connection
-
-
 connectDb().then(()=>{
     app.listen(port, ()=>{console.log('listening on server', port)})
 });

@@ -1,7 +1,9 @@
 const { userService, jwtService } = require('../services')
 const jwt = require('jsonwebtoken');
 const { TOKEN_PURPOSE } = require('../constants');
+const { constants } = require('crypto');
 const JWT_SECRET = process.env.JWT_SECRET;
+const CLIENT_URL = process.env.CLIENT_URL;
 
 
 async function signUpController(req, res) {
@@ -16,11 +18,10 @@ async function signUpController(req, res) {
         //Add a new user
         const user = await userService.addUser({ name, email, password });
         const token = await jwtService.createJwtToken({ id: user._id, purpose: TOKEN_PURPOSE.email_verification });
-        console.log(token);
+        console.log(`${CLIENT_URL}/auth/verify-email/${token}`);
 
         res.status(201).json({
             message: 'User created. Please verify your email.',
-            token
         });
 
     }
@@ -47,15 +48,12 @@ async function logInController(req, res) {
         if (!user.isVerified) {
             return res.status(403).json({ error: "Please verify your email" });
         };
-
-
         //check if password is correct
         const isMatch = await user.comparePassword(password);
         if (!isMatch) {
             return res.status(401).json({ error: "Please enter correct password" });
         }
         // Assign a token if everything valid
-        // const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
         const token = await jwtService.createJwtToken({ id: user._id }, JWT_SECRET);
         const { password: _, ...userObject } = user.toObject();
         res.json({ token, userObject });
@@ -66,11 +64,11 @@ async function logInController(req, res) {
 }
 
 async function emailVerificationController(req, res) {
-    const { token } = req.body;
+    const { token } = req.params;
     try {
 
         if (!token) {
-            return res.status(400).json({ error: "Token and OTP are required." })
+            return res.status(400).json({ error: "Token is required." })
         }
         // decode with otp to get email
         const decoded = jwt.verify(token, JWT_SECRET);
@@ -88,7 +86,7 @@ async function emailVerificationController(req, res) {
         }
 
         if (user.isVerified) {
-            return res.status(400).json({ error: "User already verified" });
+            return res.status(400).json({ error: "User already verified. Please login." });
         }
 
 
@@ -122,6 +120,7 @@ async function emailVerificationController(req, res) {
 }
 
 async function changePasswordController(req, res) {
+
     try {
         //get user id and find user by this id
         const userId = req.user.id;
@@ -136,7 +135,7 @@ async function changePasswordController(req, res) {
         }
 
         //check password 
-        if (!user.comparePassword(oldPassword)) {
+        if (! await user.comparePassword(oldPassword)) {
             return res.status(401).json({ error: "Please enter correct current password" });
         }
         //update the password
@@ -154,21 +153,21 @@ async function forgotPasswordController(req, res) {
 
     try {
         //Get email from request and find user
-        const { email } = req.body;
+        const { email } = req.params;
         if (!email) {
             return res.status(400).json({ error: "Email is required." })
         }
         const user = await userService.findUser({ email });
         //Check if user exists
         if (!user) {
-            return res.status(401).json({ error: "Invalid token" });
+            return res.status(401).json({ error: "User does not exist" });
         };
         //Generate a new password-reset-token
         const token = await jwtService.createJwtToken({ id:user._id, purpose: TOKEN_PURPOSE.reset_password },user.password);
+        console.log(`${CLIENT_URL}/auth/reset-password/${token}`);
 
         return res.status(201).json({
             message: 'Please use this token to reset your password.',
-            token
         });
 
     }
@@ -209,7 +208,6 @@ async function resetPasswordController(req, res) {
 
         res.status(200).json({ message: 'Password changed successfully' });
 
-        res.json({ message: 'Password changes successfully' });
 
     } catch (err) {
         res.status(500).json({ error: err.message });
