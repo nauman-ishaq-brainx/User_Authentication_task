@@ -1,5 +1,7 @@
 module.exports = {
     userService: require('./user'),
     taskService: require('./task'),
-    jwtService: require('./jwt')
+    jwtService: require('./jwt'),
+    sharedTaskService: require('./sharedTask'),
+
 }

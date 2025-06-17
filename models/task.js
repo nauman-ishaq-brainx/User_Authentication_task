@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+
 const taskSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -17,6 +18,13 @@ const taskSchema = new mongoose.Schema({
     { timestamps: true }
 
 );
+taskSchema.pre('findOneAndDelete', async function(next) {
+  const task = await this.model.findOne(this.getFilter());
+  if (task) {
+    await mongoose.model('SharedTask').deleteMany({ taskId: task._id });
+  }
+  next();
+});
 
 const Task = mongoose.model('Task', taskSchema);
 module.exports = Task;
