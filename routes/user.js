@@ -4,6 +4,9 @@ const auth = require('../middleware/auth');
 const {userController} = require('../controllers/index')
 
 
+
+
+router.get('/all', auth, userController.getAllUsers)
 router.post('/signup', userController.signUpController);
 router.post('/login', userController.logInController);
 router.post('/verify/:token', userController.emailVerificationController);

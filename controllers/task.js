@@ -88,7 +88,6 @@ async function taskNotCompletedController(req, res) {
 
 
 async function deleteTaskController(req, res) {
-    console.log('hello')
     try {
         const taskId = req.params.id;
         const deletedTask = await taskService.deleteTask({ _id: taskId });

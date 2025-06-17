@@ -42,7 +42,7 @@ async function aggregateSharedTasks(pipeline = []) {
 }
 
 function findSharedTasks(filter = {}) {
-  return SharedTask.find(filter); // Do NOT use .exec() or .lean() here
+  return SharedTask.find(filter); 
 }
 
 module.exports = {

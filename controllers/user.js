@@ -5,6 +5,20 @@ const { constants } = require('crypto');
 const JWT_SECRET = process.env.JWT_SECRET;
 const CLIENT_URL = process.env.CLIENT_URL;
 
+const getAllUsers = async (req, res) => {
+    try {
+        const currentUserId = req.user.id;
+
+        // Only fetch id, name, and email
+        const users = await userService.findAllUsers({ _id: { $ne: currentUserId } })
+            .select("_id name email");
+
+        res.status(200).json({ users });
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        res.status(500).json({ error: "Failed to fetch users" });
+    }
+};
 
 async function signUpController(req, res) {
     try {
@@ -214,4 +228,4 @@ async function resetPasswordController(req, res) {
     }
 
 }
-module.exports = { signUpController, logInController, emailVerificationController, changePasswordController, forgotPasswordController, resetPasswordController }
+module.exports = { signUpController, logInController, emailVerificationController, changePasswordController, forgotPasswordController, resetPasswordController, getAllUsers }

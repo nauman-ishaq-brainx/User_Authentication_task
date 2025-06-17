@@ -94,7 +94,6 @@ const getAcceptedSharedTasksController = async (req, res) => {
 
     res.json({ sharedTasks });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "Failed to fetch accepted shared tasks" });
   }
 };
