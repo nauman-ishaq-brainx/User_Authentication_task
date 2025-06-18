@@ -31,6 +31,8 @@ async function shareTaskController(req, res) {
       taskId,
       sender: req.user.id,
       receiver: receiver._id,
+      status: 'pending'
+      
     });
     if (alreadyShared) {
       return res.status(409).json({ error: 'Task already shared with this user.' });
