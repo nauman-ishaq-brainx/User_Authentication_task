@@ -4,14 +4,21 @@ const { taskService } = require('../services');
 
 async function addTaskController(req, res) {
     try {
-        const { name } = req.body;
+        const { name, dueDate } = req.body;
+
         if (!name) {
             return res.status(400).json({ error: 'Name of the task is required' })
         };
-        const task = await taskService.addTask({ name, user: req.user.id });
+        const task = await taskService.addTask({
+            name,
+            user: req.user.id,
+            dueDate: dueDate ? new Date(dueDate) : undefined
+        });
+
         return res.status(201).json({ message: "Your task has been successfully added" });
     }
     catch (err) {
+        console.log(err)
         return res.status(500).json({ error: err.message })
     }
 
@@ -29,7 +36,7 @@ async function updateTaskNameController(req, res) {
         }
 
         const updatedTask = await taskService.updateTask(
-            { _id: new mongoose.Types.ObjectId(taskId)},
+            { _id: new mongoose.Types.ObjectId(taskId) },
             { name }
         );
 

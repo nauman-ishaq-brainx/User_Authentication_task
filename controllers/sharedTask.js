@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { sharedTaskService, taskService, userService } = require('../services');
-
+const { sendEmail } = require('../utils/emailSender');
 // Share a task with another user
 async function shareTaskController(req, res) {
   try {
@@ -43,6 +43,11 @@ async function shareTaskController(req, res) {
       sender: req.user.id,
       receiver: receiver._id,
     });
+    await sendEmail({
+                to: receiverEmail,
+                subject: `${req.user.email} shared a task : ${task.name}`,
+                html:  `<p>Please visit your dashboard to see the task.</p>`,
+            });
 
     res.status(201).json({ message: 'Task shared successfully.', sharedTask });
   } catch (err) {
@@ -64,6 +69,15 @@ async function acceptSharedTaskController(req, res) {
     }
 
     await sharedTaskService.updateSharedTask({ _id: id }, { status: 'accepted' });
+    const sender = await userService.findUser({_id:sharedTask.sender
+    })
+    const task = await taskService.findTask({_id: sharedTask.taskId})
+
+    await sendEmail({
+                to: sender.email,
+                subject: `${req.user.email} accepted your task`,
+                html:  `<p>Your task ${task.name} has been accepted by ${req.user.name}</p>`,
+            });
 
     res.status(200).json({ message: "Task accepted for collaboration", taskId: sharedTask.taskId });
   } catch (err) {
@@ -80,6 +94,13 @@ async function rejectSharedTaskController(req, res) {
     if (!sharedTask) return res.status(404).json({ error: "Shared task not found" });
 
     await sharedTaskService.updateSharedTask({ _id: id }, { status: 'rejected' });
+    const task = await taskService.findTask({_id: sharedTask.taskId})
+
+    await sendEmail({
+                to: sender.email,
+                subject: `${req.user.email} rejected your task`,
+                html:  `<p>Your task ${task.name} has been rejected by ${req.user.name}<p>`,
+            });
 
     res.status(200).json({ message: "Task rejected" });
   } catch (err) {
@@ -90,7 +111,7 @@ const getAcceptedSharedTasksController = async (req, res) => {
   try {
     const sharedTasks = await sharedTaskService
       .findSharedTasks({ receiver: req.user._id, status: "accepted" })
-      .populate("taskId", "name isCompleted")
+      .populate("taskId", "name isCompleted dueDate")
       .populate("sender", "email")
       .sort({ createdAt: -1 });
 
@@ -112,7 +133,7 @@ const getReceivedSharedTasksController = async (req, res) => {
 
     res.status(200).json({ sharedTasks });
   } catch (error) {
-    console.error("Error fetching received shared tasks:", error);
+
     res.status(500).json({ error: "Server error while fetching shared tasks" });
   }
 };

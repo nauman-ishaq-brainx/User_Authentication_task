@@ -1,9 +1,10 @@
 const { userService, jwtService } = require('../services')
 const jwt = require('jsonwebtoken');
-const { TOKEN_PURPOSE } = require('../constants');
-const { constants } = require('crypto');
+const { TOKEN_PURPOSE, getVerificationEmailTemplate } = require('../constants');
 const JWT_SECRET = process.env.JWT_SECRET;
 const CLIENT_URL = process.env.CLIENT_URL;
+const { sendEmail } = require('../utils/emailSender');
+
 
 const getAllUsers = async (req, res) => {
     try {
@@ -32,6 +33,11 @@ async function signUpController(req, res) {
         //Add a new user
         const user = await userService.addUser({ name, email, password });
         const token = await jwtService.createJwtToken({ id: user._id, purpose: TOKEN_PURPOSE.email_verification });
+        await sendEmail({
+            to: email,
+            subject: 'You have successfully signed up',
+            html:  getVerificationEmailTemplate(token),
+        });
         console.log(`${CLIENT_URL}/auth/verify-email/${token}`);
 
         res.status(201).json({
@@ -40,6 +46,7 @@ async function signUpController(req, res) {
 
     }
     catch (err) {
+        console.log(err)
         return res.status(500).json({ error: err.message })
     }
 }

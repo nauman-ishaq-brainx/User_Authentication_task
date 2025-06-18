@@ -5,10 +5,16 @@ const http = require('http');
 const { Server } = require('socket.io');
 require('dotenv').config();
 const cors = require("cors");
+const reminderJob = require('./utils/reminderJob');
+reminderJob.start();
+
+
+
 
 app.use(
   cors()
 );
+
 
 const port = process.env.PORT;
 const CLIENT_URL = process.env.CLIENT_URL;
@@ -31,6 +37,9 @@ io.on("connection", (socket) => {
   // Broadcast new invite
   socket.on("shared_task_invite", (inviteData) => {
     socket.broadcast.emit("shared_task_invite", inviteData);
+  });
+  socket.on("task_deleted", (taskId) => {
+    socket.broadcast.emit("task_deleted", taskId);
   });
 
   socket.on("disconnect", () => {
