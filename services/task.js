@@ -1,8 +1,8 @@
-const {Task} = require('../models');
+const { Task } = require('../models');
 
 
 
-async function addTask(data){
+async function addTask(data) {
     const task = new Task(data);
     await task.save();
     return task;
@@ -14,8 +14,15 @@ async function findTask(cond) {
 }
 
 
-async function findAllTasks(cond = {}) {
+async function findAllTasks(cond = {}, skip, limit) {
     return await Task.find(cond);
+}
+
+async function findPaginatedTasks(cond = {}, skip = 0, limit = 5) {
+  const tasksQuery = Task.find(cond).skip(skip).limit(limit);
+  const countQuery = Task.countDocuments(cond);
+  const [tasks, totalCount] = await Promise.all([tasksQuery, countQuery]);
+  return [tasks, totalCount];
 }
 
 async function updateTask(cond, updates) {
@@ -36,4 +43,4 @@ async function aggregateTasks(pipeline = []) {
 }
 
 
-module.exports = { addTask, findTask, updateTask, findAllTasks, deleteTask, aggregateTasks }
+module.exports = { addTask, findTask, updateTask, findAllTasks, deleteTask, aggregateTasks, findPaginatedTasks }

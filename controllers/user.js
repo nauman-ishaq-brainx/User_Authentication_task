@@ -1,6 +1,6 @@
 const { userService, jwtService } = require('../services')
 const jwt = require('jsonwebtoken');
-const { TOKEN_PURPOSE, getVerificationEmailTemplate } = require('../constants');
+const { TOKEN_PURPOSE, getVerificationEmailTemplate, passwordResetTemplate } = require('../constants');
 const JWT_SECRET = process.env.JWT_SECRET;
 const CLIENT_URL = process.env.CLIENT_URL;
 const { sendEmail } = require('../utils/emailSender');
@@ -16,7 +16,6 @@ const getAllUsers = async (req, res) => {
 
         res.status(200).json({ users });
     } catch (error) {
-        console.error("Error fetching users:", error);
         res.status(500).json({ error: "Failed to fetch users" });
     }
 };
@@ -46,7 +45,6 @@ async function signUpController(req, res) {
 
     }
     catch (err) {
-        console.log(err)
         return res.status(500).json({ error: err.message })
     }
 }
@@ -185,6 +183,11 @@ async function forgotPasswordController(req, res) {
         };
         //Generate a new password-reset-token
         const token = await jwtService.createJwtToken({ id:user._id, purpose: TOKEN_PURPOSE.reset_password },user.password);
+        await sendEmail({
+            to: email,
+            subject: 'Password Reset link',
+            html:  passwordResetTemplate(token),
+        });
         console.log(`${CLIENT_URL}/auth/reset-password/${token}`);
 
         return res.status(201).json({

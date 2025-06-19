@@ -18,7 +18,6 @@ async function addTaskController(req, res) {
         return res.status(201).json({ message: "Your task has been successfully added" });
     }
     catch (err) {
-        console.log(err)
         return res.status(500).json({ error: err.message })
     }
 
@@ -59,6 +58,18 @@ async function getAllTasksController(req, res) {
         return res.status(500).json({ error: err.message })
     }
 
+}
+async function getPaginatedTasksController(req, res) {
+    const page = parseInt(req.query.page);
+    const limit = parseInt(req.query.limit);
+    const skip = (page-1) * limit;
+    try {
+        const [tasks, totalTasks] = await taskService.findPaginatedTasks({ user: req.user.id }, skip, limit);
+        return res.status(200).json({ tasks , totalPages: Math.ceil(totalTasks/limit)});
+    }
+    catch (err) {
+        return res.status(500).json({ error: err.message })
+    }
 }
 
 async function taskCompletedController(req, res) {
@@ -109,4 +120,4 @@ async function deleteTaskController(req, res) {
 }
 
 
-module.exports = { updateTaskNameController, addTaskController, taskNotCompletedController, getAllTasksController, taskCompletedController, deleteTaskController }
+module.exports = { updateTaskNameController, addTaskController, taskNotCompletedController, getAllTasksController, taskCompletedController, deleteTaskController, getPaginatedTasksController }

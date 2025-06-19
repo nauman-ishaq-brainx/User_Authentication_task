@@ -8,16 +8,12 @@ async function addUser(data) {
     return user
 }
 
-
-
 async function findUser(cond) {
     return await User.findOne(cond);
 }
 function findAllUsers(filter = {}) {
-  return User.find(filter); 
+    return User.find(filter);
 }
-
-module.exports = { findAllUsers };
 
 
 async function updateUser(cond, updates) {

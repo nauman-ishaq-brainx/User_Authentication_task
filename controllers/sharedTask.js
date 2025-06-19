@@ -88,6 +88,7 @@ async function acceptSharedTaskController(req, res) {
 // Reject shared task
 async function rejectSharedTaskController(req, res) {
   try {
+
     const id = req.params.id;
 
     const sharedTask = await sharedTaskService.findSharedTask({ _id: id, receiver: req.user.id });
@@ -95,11 +96,11 @@ async function rejectSharedTaskController(req, res) {
 
     await sharedTaskService.updateSharedTask({ _id: id }, { status: 'rejected' });
     const task = await taskService.findTask({_id: sharedTask.taskId})
-
+    const sender = await userService.findUser({_id: sharedTask.sender})
     await sendEmail({
                 to: sender.email,
                 subject: `${req.user.email} rejected your task`,
-                html:  `<p>Your task ${task.name} has been rejected by ${req.user.name}<p>`,
+                html:  `<p>Your task "${task.name}" has been rejected by ${req.user.name}<p>`,
             });
 
     res.status(200).json({ message: "Task rejected" });

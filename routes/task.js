@@ -6,7 +6,7 @@ const {taskController} = require('../controllers');
 
 
 router.post('/', taskController.addTaskController);
-router.get('/',taskController.getAllTasksController);
+router.get('/',taskController.getPaginatedTasksController);
 router.patch('/complete/:id', canChangeTask, taskController.taskCompletedController);
 router.delete('/:id', isTaskOwner, taskController.deleteTaskController);
 router.patch('/not-complete/:id', canChangeTask, taskController.taskNotCompletedController);

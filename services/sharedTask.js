@@ -8,7 +8,7 @@ async function addSharedTask(data) {
 }
 
 async function deleteSharedTask(condition) {
-  return await SharedTask.findOneAndDelete(condition);
+    return await SharedTask.findOneAndDelete(condition);
 }
 
 
@@ -21,7 +21,7 @@ async function findAllSharedTasks(cond = {}) {
     return await SharedTask.find(cond);
 }
 function findSharedTasks(filter = {}) {
-  return  SharedTask.find(filter); 
+    return SharedTask.find(filter);
 }
 
 async function updateSharedTask(cond, updates) {

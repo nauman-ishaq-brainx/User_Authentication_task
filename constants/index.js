@@ -21,6 +21,23 @@ function getVerificationEmailTemplate(token) {
   `;
 }
 
+function passwordResetTemplate(token) {
+    const passwordResetLink = `${process.env.CLIENT_URL}/auth/reset-password/${token}`;
+
+  return `
+    <div style="font-family: Arial, sans-serif; line-height: 1.5; padding: 20px;">
+      <h2 style="color: #333;">Please click this button to reset your password</h2>
+      <div style="margin: 30px 0;">
+        <a href="${passwordResetLink}"
+           style="background: #007BFF; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+          Reset Password
+        </a>
+      </div>
+      <p style="color: #888; font-size: 12px;">If you didn’t request this, you can safely ignore this email.</p>
+    </div>
+  `;
+}
+
 module.exports ={
-    TOKEN_PURPOSE, getVerificationEmailTemplate
+    TOKEN_PURPOSE, getVerificationEmailTemplate, passwordResetTemplate
 }

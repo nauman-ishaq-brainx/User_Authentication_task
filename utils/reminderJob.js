@@ -7,8 +7,6 @@ const reminderJob = cron.schedule("* * * * *", async () => {
     const now = new Date();
     const reminderStart = new Date(now.getTime() + 59 * 60 * 1000); 
     const reminderEnd = new Date(reminderStart.getTime() + 60 * 1000);
-    console.log(reminderStart.toLocaleString())
-    console.log(reminderEnd.toLocaleString())
 
     const tasks = await taskService.findAllTasks({
       dueDate: { $gte: reminderStart, $lt: reminderEnd },
@@ -18,7 +16,6 @@ const reminderJob = cron.schedule("* * * * *", async () => {
 
 
     for (const task of tasks) {
-        console.log(task, task?.dueDate.toLocaleString())
       const user = await userService.findUser(task.user);
       if (!user || !user.email) continue;
 
