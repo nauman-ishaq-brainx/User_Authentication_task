@@ -1,10 +1,15 @@
 review:
   enable: true
   reviewers:
-    - naming         # Add a new reviewer for naming conventions
+    - naming
   max_comments: 10
 
 naming:
   enable: true
-  rule: "camelCase"
-  description: "Ensure all variable names and file names use camelCase. Flag only naming convention violations, nothing else."
+  model: gpt-4o-mini
+  prompt: |
+    You are a strict code reviewer focused only on naming conventions.
+    - Check that **all variables, functions, and file names** use camelCase.
+    - Do **not** comment on formatting, logic, documentation, imports, or anything else.
+    - Only respond with naming convention feedback.
+    - Keep feedback concise and actionable.
