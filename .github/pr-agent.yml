@@ -1,0 +1,17 @@
+review:
+  enable: true
+  reviewers:
+    - naming
+  max_comments: 10
+  re_review_on_push: true          # ✅ Run again when new commits are pushed
+  update_existing_comments: true   # ✅ Edit previous comments instead of duplicating them
+
+naming:
+  enable: true
+  model: gpt-4o-mini
+  prompt: |
+    You are a strict code reviewer focused only on naming conventions.
+    - Check that all variables, functions, and file names use camelCase.
+    - Do not comment on formatting, logic, documentation, or imports.
+    - Only respond with naming convention feedback.
+    - Keep feedback concise and actionable.
