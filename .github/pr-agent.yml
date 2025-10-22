@@ -3,7 +3,8 @@ review:
   reviewers:
     - naming
   max_comments: 10
-  re_review_on_push: true  # <— This forces Qodo to re-run when new commits are pushed
+  re_review_on_push: true          # ✅ Run again when new commits are pushed
+  update_existing_comments: true   # ✅ Edit previous comments instead of duplicating them
 
 naming:
   enable: true
