@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 export default function UserList() {
   const [users, setUsers] = useState();
   const [loading, setLoading] = useState(false);
-
+    console.log("users", users);
   useEffect(() => {
     setLoading(true);
     fetch("https://jsonplaceholder.typicode.com/users")
