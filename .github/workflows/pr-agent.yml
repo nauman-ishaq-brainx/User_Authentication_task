@@ -9,15 +9,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-      - name: Run PR Agent
-        uses: Codium-ai/pr-agent@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      - name: Run Qodo PR-Agent
+        uses: qodo-ai/pr-agent@main
         with:
-          config_file: ./.pr-agent.yml
-          review_labels: naming
-          review: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_action: review
+        env:
+          OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
+          QODO_CONFIG_PATH: ".github/pr-agent.yml"
+
+
+
