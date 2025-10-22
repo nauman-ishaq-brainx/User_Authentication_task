@@ -1,0 +1,11 @@
+review:
+  enable: true
+  reviewers:
+    - naming         # Add a new reviewer for naming conventions
+  max_comments: 10
+
+naming:
+  enable: true
+  rule: "camelCase"
+  description: "Ensure all variable names and file names use camelCase. Flag only naming convention violations, nothing else."
+
